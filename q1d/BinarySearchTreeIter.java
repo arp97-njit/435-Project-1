@@ -144,8 +144,20 @@ class BinarySearchTreeIter {
     }
     
     //delete iterate
-    void deleteIter(){
-        
+    Node deleteIter(Node root, int value){
+        Node current = root;
+        while (current != null){
+            if (current.value < value){
+                current = current.right;
+            }
+            else if (current.value > value){
+                current = current.left;
+            }
+            else{
+                return current.right;
+            }
+        }
+        return current;
     }
     
 
