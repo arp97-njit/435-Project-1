@@ -131,8 +131,27 @@ class BinarySearchTreeRec {
     }
     
     //delete recursive
-    void deleteRec(){
-        
+    void deleteRec(int value){
+        root = deleteHelper(root, value);
+    }
+    
+    Node deleteHelper(Node root, int value){
+        if (root == null){
+            return root;
+        }
+        else {
+            if (root.value < value){
+                root.right = deleteHelper(root.right, value);
+            }
+            else if (root.value > value){
+                root.left = deleteHelper(root.left, value);
+            }
+            else { //found our node
+                return root.right;
+            }
+            
+        }
+        return root;
     }
     
 
