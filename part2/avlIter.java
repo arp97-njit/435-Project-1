@@ -5,13 +5,18 @@ class avlIter {
     public static void main(String[] args) {
         avlIter tree = new avlIter();
         
-        tree.root = tree.insertIter(tree.root, 50);
-        tree.insertIter(tree.root,30);
-        tree.insertIter(tree.root,20);
-        tree.insertIter(tree.root,40);
-        tree.insertIter(tree.root,70);
-        tree.insertIter(tree.root,60);
-        tree.insertIter(tree.root,80);
+        ArrayList<Integer> toParse = tree.getRandomArray(100);
+
+
+        for(int i = 0; i < toParse.size(); i++){
+            if(i == 0){
+                tree.root = tree.insertIter(tree.root, toParse.get(i));
+            }
+            else{
+                tree.insertIter(tree.root, toParse.get(i));
+
+            }
+        }
         
         tree.inorder();
 
@@ -25,7 +30,7 @@ class avlIter {
       void inorderRec(Node root) {
           if (root != null) {
               inorderRec(root.left);
-              System.out.println(root.value);
+            //  System.out.println(root.value);
               inorderRec(root.right);
           }
       }
@@ -121,31 +126,49 @@ class avlIter {
     //insert iterate - avl
     Node insertIter(Node root, int value) {
        Node current = root;
+        int traversalCounter = 0;
             
             while(current != null){
                 if (current.value < value){
                     if(current.right == null){
                         current.right = new Node(value);
+                        current.right.parent = current;
+                        current = current.right;
+                        traversalCounter++;
                         break;
                     }
-                    current = current.right;
+                    else{
+                        traversalCounter++;
+                        current = current.right;
+                    }
                 }
                 else if (current.value > value){
                     if(current.left == null){
                         current.left = new Node(value);
+                        current.left.parent = current;
+                        current = current.left;
+                        traversalCounter++;
                         break;
                     }
-                    current = current.left;
+                    else{
+                        traversalCounter++;
+                        current = current.left;
+                    }
                 }
             }
             if (current == null) {  //makes new node 1 time
                 current = new Node(value);
+                System.out.println("traveled: " + traversalCounter + "levels to insert - " + value);
                 return current;   //do i need to remove this return??? - probably
-            }
-       
                 
+            }
+        
+        System.out.println("traveled: " + traversalCounter + "levels to insert - " + value);
+       
+        
         Node cpCurrForHeight = current; //makes a copy of current (bottom of tree) that will be used to iterate up the parents to adjust their heights
         //now that the heights of all nodes are correct - untested but probably
+        
         int heightCounter = 1; //will keep track of actual iterations
         while (cpCurrForHeight.parent != null){  //updates heights every time insertion
             heightCounter++;
@@ -162,8 +185,10 @@ class avlIter {
         //then need to calculate the BFs of a given node
         //should probably make this it's own function too - that way height and BF can run whenever and just update everything
         Node cpCurrForBF = current;
-        while(cpCurrForBF.parent != null){  //updates BFs every time insertion
-            int leftHeight, rightHeight = 0;
+        while(cpCurrForBF != null){  //updates BFs every time insertion
+            int leftHeight = 0;
+            int rightHeight = 0;
+            
             if(cpCurrForBF.left != null){
                 leftHeight = cpCurrForBF.left.height;
             }
@@ -172,21 +197,32 @@ class avlIter {
             }
             int balanceFactor = leftHeight - rightHeight;  //get bf
             cpCurrForBF.bf = balanceFactor;  //add bf to new node
+            System.out.println(cpCurrForBF.value +" "+ cpCurrForBF.bf);
             cpCurrForBF = cpCurrForBF.parent; //iterate up - will update all BFs on every node insert
+           
         }
-        
+
         //now that all BFs and Heights are attached to their nodes
         //time to check the balance - rotate when needed
         Node cpCurrForReBalance = current;
-        selfBalance(cpCurrForReBalance);
+        while(cpCurrForReBalance != null){
+            
+            if(cpCurrForReBalance.bf == 1 || cpCurrForReBalance.bf == 0 ||cpCurrForReBalance.bf == -1 ){
+                cpCurrForReBalance = cpCurrForReBalance.parent;
+            }
+            else{
+                selfBalance(cpCurrForReBalance);
+            }
+        }
         
             return current;  //won't happen but java
     }
     
     void selfBalance(Node curr){
         Node toRebalance = curr;
+
+        
         if(toRebalance.bf > 1){
-            
             if(toRebalance.left.bf < 0){
                 //do left rotation  - left right case
                 rotateLeft(toRebalance, 1); //1 is a flag
@@ -196,7 +232,7 @@ class avlIter {
             rotateRight(toRebalance, 0); //0 is a flag
             
         }
-        else if(toRebalance < -1){
+        else if(toRebalance.bf < -1){
             
             if(toRebalance.right.bf > 0){
                 //do right rotation - right left case
@@ -272,12 +308,13 @@ class avlIter {
     
     void updateBalanceFactor(Node curr){ //per node
         Node bfTracker = curr;
-        int left, right = 0;
+        int left = 0;
+        int right = 0;
         if(bfTracker.left != null){
             left = bfTracker.left.height;
         }
         if(bfTracker.right != null){
-            right = bfTracker.rigth.height;
+            right = bfTracker.right.height;
         }
         int balanceFactor = left - right;
         bfTracker.bf = balanceFactor;
@@ -286,9 +323,10 @@ class avlIter {
     
     void updateHeight(Node curr){ //per node
         Node heightTracker = curr;
-        int left, right = 0;
+        int left = 0;
+        int right = 0;
         if(heightTracker.left != null){
-            left = heightTracker.left.height
+            left = heightTracker.left.height;
         }
         if(heightTracker.right != null){
             right = heightTracker.right.height;
@@ -297,21 +335,26 @@ class avlIter {
         
     }
     
-    ArrayList getRandomArray(int n){
-        ArrayList<Integer> rtnArray = new ArrayList<Integer>;
+    ArrayList<Integer> getRandomArray(int n){
+        ArrayList<Integer> rtnArray = new ArrayList<Integer>();
         Random rand = new Random();
-        randNum = rand.nextInt(n);
+        int randNum = rand.nextInt(n) + 1;
         int counter = 0;
-        while((rtnArray.contains(randNum) == false) && (counter != n)){
-            rtnArray.add(randNum);
-            counter++;
+        while(counter != n){
+            if(rtnArray.contains(randNum) == false){
+                rtnArray.add(randNum);
+                counter++;
+            }
+            randNum = rand.nextInt(n) + 1;
+            
         }
+        
         return rtnArray;
         
     }
     
-    ArrayList getSortedArray(int n){
-        ArrayList<Integer> rtnArray = new ArrayList<Integer>;
+    ArrayList<Integer> getSortedArray(int n){
+        ArrayList<Integer> rtnArray = new ArrayList<Integer>();
         for (int i = n; i > 0; i--){
             rtnArray.add(i);
         }
